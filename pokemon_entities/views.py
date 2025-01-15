@@ -76,6 +76,8 @@ def show_pokemon(request, pokemon_id):
     pokemon_data = {
         'img_url': None,
         'title_ru': None,
+        'title_en': None,
+        'title_jp': None,
         'entities': []
     }
     for pokemon_entity in pokemons:
@@ -87,6 +89,10 @@ def show_pokemon(request, pokemon_id):
         else:
             pokemon_data['img_url'] = ''
         pokemon_data['title_ru'] = pokemon.title
+        pokemon_data['title_en'] = pokemon.title_en
+        pokemon_data['title_jp'] = pokemon.title_jp
+        pokemon_data['description'] = pokemon_entity.description
+
         add_pokemon(
             folium_map,
             pokemon_entity.lat,
