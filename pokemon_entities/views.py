@@ -78,7 +78,8 @@ def show_pokemon(request, pokemon_id):
         'title_ru': None,
         'title_en': None,
         'title_jp': None,
-        'entities': []
+        'entities': [],
+        'evolved_from': None
     }
     for pokemon_entity in pokemons:
         pokemon = pokemon_entity.pokemon
@@ -108,7 +109,21 @@ def show_pokemon(request, pokemon_id):
             'defence': pokemon_entity.defence,
             'stamina': pokemon_entity.stamina,
         })
+        if pokemon.evolved_from:
+            evolved_from_pokemon = pokemon.evolved_from
+            pokemon_data['evolved_from'] = {
+                'id': evolved_from_pokemon.id,
+                'title_ru': evolved_from_pokemon.title,
+                'img_url': request.build_absolute_uri(settings.MEDIA_URL + evolved_from_pokemon.picture.name) if evolved_from_pokemon.picture else ''
+            }
 
+        if pokemon.evolutions.exists():
+            next_evolution_pokemon = pokemon.evolutions.first()
+            pokemon_data['next_evolution'] = {
+                'pokemon_id': next_evolution_pokemon.id,
+                'title_ru': next_evolution_pokemon.title,
+                'img_url': request.build_absolute_uri(settings.MEDIA_URL + next_evolution_pokemon.picture.name) if next_evolution_pokemon.picture else ''
+            }
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(),
         'pokemon': pokemon_data

@@ -6,6 +6,13 @@ class Pokemon(models.Model):
     title_en = models.TextField()
     title_jp = models.TextField()
     picture = models.ImageField(null=True, blank=True)
+    evolved_from = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='evolutions'
+    )
 
     def __str__(self):
         return f'{self.title}'
@@ -25,4 +32,4 @@ class PokemonEntity(models.Model):
     description = models.TextField()
 
     def __str__(self):
-        return f'Pokemon at ({self.lat}, {self.lon}) - {self.pokemon.title}'
+        return self.pokemon.title
