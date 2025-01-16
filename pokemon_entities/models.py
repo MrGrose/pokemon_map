@@ -6,16 +6,23 @@ class Pokemon(models.Model):
     title_en = models.TextField()
     title_jp = models.TextField()
     picture = models.ImageField(null=True, blank=True)
-    evolved_from = models.ForeignKey(
+    previous_evolution = models.ForeignKey(
         'self',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='evolutions'
     )
+    next_evolution = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='previous_evolutions',
+        blank=True
+    )
 
     def __str__(self):
-        return f'{self.title}'
+        return self.title
 
 
 class PokemonEntity(models.Model):

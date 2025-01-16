@@ -69,6 +69,7 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
+
     pokemons = PokemonEntity.objects.filter(pokemon__id=pokemon_id)
     if not pokemons.exists():
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
@@ -79,8 +80,10 @@ def show_pokemon(request, pokemon_id):
         'title_en': None,
         'title_jp': None,
         'entities': [],
-        'evolved_from': None
+        'previous_evolution': None,
+        'next_evolution': None
     }
+
     for pokemon_entity in pokemons:
         pokemon = pokemon_entity.pokemon
         if pokemon.picture:
@@ -100,6 +103,7 @@ def show_pokemon(request, pokemon_id):
             pokemon_entity.lon,
             pokemon_data['img_url']
         )
+
         pokemon_data['entities'].append({
             'lat': pokemon_entity.lat,
             'lon': pokemon_entity.lon,
@@ -109,21 +113,23 @@ def show_pokemon(request, pokemon_id):
             'defence': pokemon_entity.defence,
             'stamina': pokemon_entity.stamina,
         })
-        if pokemon.evolved_from:
-            evolved_from_pokemon = pokemon.evolved_from
-            pokemon_data['evolved_from'] = {
-                'id': evolved_from_pokemon.id,
+
+        if pokemon.previous_evolution:
+            evolved_from_pokemon = pokemon.previous_evolution
+            pokemon_data['previous_evolution'] = {
+                'pokemon_id': evolved_from_pokemon.id,
                 'title_ru': evolved_from_pokemon.title,
                 'img_url': request.build_absolute_uri(settings.MEDIA_URL + evolved_from_pokemon.picture.name) if evolved_from_pokemon.picture else ''
             }
 
-        if pokemon.evolutions.exists():
-            next_evolution_pokemon = pokemon.evolutions.first()
+        if pokemon.next_evolution:
+            next_evolution_pokemon = pokemon.next_evolution
             pokemon_data['next_evolution'] = {
                 'pokemon_id': next_evolution_pokemon.id,
                 'title_ru': next_evolution_pokemon.title,
                 'img_url': request.build_absolute_uri(settings.MEDIA_URL + next_evolution_pokemon.picture.name) if next_evolution_pokemon.picture else ''
             }
+
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(),
         'pokemon': pokemon_data
