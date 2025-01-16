@@ -1,5 +1,3 @@
-import json
-
 import folium
 from django.conf import settings
 from django.http import HttpResponseNotFound
@@ -69,7 +67,6 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-
     pokemons = PokemonEntity.objects.filter(pokemon__id=pokemon_id)
     if not pokemons.exists():
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
@@ -103,16 +100,6 @@ def show_pokemon(request, pokemon_id):
             pokemon_entity.lon,
             pokemon_data['img_url']
         )
-
-        pokemon_data['entities'].append({
-            'lat': pokemon_entity.lat,
-            'lon': pokemon_entity.lon,
-            'level': pokemon_entity.level,
-            'health': pokemon_entity.health,
-            'attack': pokemon_entity.attack,
-            'defence': pokemon_entity.defence,
-            'stamina': pokemon_entity.stamina,
-        })
 
         if pokemon.previous_evolution:
             evolved_from_pokemon = pokemon.previous_evolution
