@@ -60,9 +60,7 @@ def show_all_pokemons(request):
         if pokemon.id not in pokemons_on_page:
             pokemons_on_page[pokemon.id] = {
                 'pokemon_id': pokemon.id,
-                'img_url': request.build_absolute_uri(
-                    pokemon.picture.url)
-                if pokemon.picture else None,
+                'img_url': get_pokemon_picture_url(request, pokemon),
                 'title_ru': pokemon.title,
             }
 
@@ -76,22 +74,18 @@ def show_pokemon(request, pokemon_id):
     pokemon_entity = PokemonEntity.objects.filter(
         pokemon__id=pokemon_id).select_related(
         'pokemon',
-        'pokemon__previous_evolution',
-        'pokemon__next_evolution'
+        'pokemon__previous_evolution'
     ).first()
     if not pokemon_entity:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
     pokemon = pokemon_entity.pokemon
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    media_url = settings.MEDIA_URL
     pokemon_data = {
-        'img_url': request.build_absolute_uri(
-            media_url + pokemon.picture.name)
-        if pokemon.picture else '',
+        'img_url': get_pokemon_picture_url(request, pokemon),
         'title_ru': pokemon.title,
         'title_en': pokemon.title_en,
         'title_jp': pokemon.title_jp,
-        'description': pokemon_entity.description,
+        'description': pokemon.description,
         'previous_evolution': None,
         'next_evolution': None
     }
@@ -108,22 +102,23 @@ def show_pokemon(request, pokemon_id):
         pokemon_data['previous_evolution'] = {
             'pokemon_id': evolved_from_pokemon.id,
             'title_ru': evolved_from_pokemon.title,
-            'img_url': request.build_absolute_uri(
-                media_url + evolved_from_pokemon.picture.name)
-            if evolved_from_pokemon.picture else ''
+            'img_url': get_pokemon_picture_url(request, evolved_from_pokemon)
         }
 
-    if pokemon.next_evolution:
-        next_evolution_pokemon = pokemon.next_evolution
+    next_evolution = pokemon.next_evolutions.first()
+    if next_evolution:
         pokemon_data['next_evolution'] = {
-            'pokemon_id': next_evolution_pokemon.id,
-            'title_ru': next_evolution_pokemon.title,
-            'img_url': request.build_absolute_uri(
-                media_url + next_evolution_pokemon.picture.name)
-            if next_evolution_pokemon.picture else ''
+            'pokemon_id': next_evolution.id,
+            'title_ru': next_evolution.title,
+            'img_url': get_pokemon_picture_url(request, next_evolution)
         }
 
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(),
         'pokemon': pokemon_data
     })
+
+
+def get_pokemon_picture_url(request, pokemon):
+    return request.build_absolute_uri(
+        settings.MEDIA_URL + pokemon.picture.name) if pokemon.picture else ''
